@@ -5,6 +5,8 @@ function handleNetMessageClick() {
     });
     msgEl.innerHTML = genMsg(messages[msgCounter]);
     msgClocks = [];
+    msgEl.scrollTop = msgEl.scrollHeight;
+    toggleTriangle();
   } else {
     if (msgCounter + 1 >= messages.length) return;
     msgCounter++;
@@ -14,8 +16,13 @@ function handleNetMessageClick() {
       msgCounter++;
     }
 
-    writingDelay(messages[msgCounter], msgEl, msgDelay);
+    writingDelay(msgEl, msgDelay);
   }
+}
+
+function toggleTriangle() {
+  const isActive = triangleDown.classList.contains("active");
+  isActive ? triangleDown.classList.remove("active") : triangleDown.classList.add("active");
 }
 
 prettyLog("Initial Values", { fighters }, { weapons });
@@ -60,17 +67,67 @@ if (newFighter) {
 
 prettyLog("After qualification", { qualifiedFigther }, { weapons });
 
-qualifiedFigther.sort((a, b) => b.newPower - a.newPower);
-const winner = qualifiedFigther[0];
-const second = qualifiedFigther[1];
-const last = qualifiedFigther[2];
+const rounds = [];
+let matchFigthers = [...qualifiedFigther];
+let n = 0;
+
+while (matchFigthers.length > 1) {
+  const winners = [];
+  const matches = [];
+  for (let i = 0; i < matchFigthers.length; i += 2) {
+    const homeFighter = matchFigthers[i];
+    const awayFighter = matchFigthers[i + 1] ?? cpuFigther;
+
+    let winner;
+    let looser;
+
+    winner = homeFighter.newPower >= awayFighter.newPower ? homeFighter : awayFighter;
+    looser = homeFighter.newPower >= awayFighter.newPower ? awayFighter : homeFighter;
+
+    const round = {
+      name: matchFigthers.length == 2 ? "Finale" : matchFigthers.length == 4 || matchFigthers.length == 3 ? "Semifinale" : `${n + 1}a fase`,
+      homeFighterName: homeFighter.name,
+      awayFighterName: awayFighter.name,
+      winnerName: winner.name,
+      looserName: looser.name,
+      homeFighter,
+      awayFighter,
+      winner,
+      looser,
+    };
+
+    matches.push(round);
+    winners.push(winner);
+  }
+
+  n++;
+  rounds.push([...matches]);
+  matchFigthers = [...winners];
+  prettyLog(`Round${n}`, { matches });
+}
+
+const winner = rounds[rounds.length - 1][0].winner;
+const second = rounds[rounds.length - 1][0].looser;
+let last;
+
+const semiFinalist1 = rounds[rounds.length - 2][0].looser;
+const semiFinalist2 = rounds[rounds.length - 2][1].looser;
+if (semiFinalist1.newPower > semiFinalist2.newPower) {
+  last = semiFinalist1;
+} else if (semiFinalist1.newPower < semiFinalist2.newPower) {
+  last = semiFinalist2;
+} else {
+  last = semiFinalist1;
+}
 
 prettyLog("podio", { winner }, { second }, { last });
 
 const msgEl = document.getElementById("message");
+const triangleDown = document.getElementById("triangle-down");
 let msgDelay = 40;
 let msgClocks = [];
 let msgCounter = 0;
 
-writingDelay(messages[msgCounter], msgEl, msgDelay);
+toggleTriangle();
+writingDelay(msgEl, msgDelay);
 window.addEventListener("click", handleNetMessageClick);

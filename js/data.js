@@ -193,6 +193,14 @@ const messages = [
     cycle: true,
   },
   {
+    text: "[homeFighterName] VS [awayFighterName]: vince [winnerName]",
+    prop: true,
+    propNasted: true,
+    headerNasted: "Ora vediamo gli esiti degli scontri della [name]",
+    use: "rounds",
+    cycle: true,
+  },
+  {
     text: "Siete pronti a sapere i nomi sul podio?",
   },
   {
